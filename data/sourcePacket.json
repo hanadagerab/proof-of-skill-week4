@@ -1,0 +1,111 @@
+{
+  "candidate": {
+    "id": "candidate_sofia_martinez",
+    "name": "Sofía Martínez",
+    "role": "Entry-Level Financial Analyst",
+    "synthetic": true
+  },
+  "task": {
+    "id": "task_margin_decline",
+    "title": "Declining Product Margin Analysis",
+    "prompt": "Analyze declining product margin and recommend the next management action.",
+    "brief": "Management observed a decline in product gross margin between Q2 and Q3. Review the supplied operating data, quantify the change, identify the primary driver, distinguish revenue effects from cost effects, and recommend one actionable management next step."
+  },
+  "sourceDataset": [
+    {
+      "id": "dataset_q2",
+      "period": "Q2",
+      "revenue": 500000,
+      "unitsSold": 10000,
+      "materialCost": 210000,
+      "freightCost": 45000,
+      "otherCOGS": 70000
+    },
+    {
+      "id": "dataset_q3",
+      "period": "Q3",
+      "revenue": 510000,
+      "unitsSold": 10000,
+      "materialCost": 245000,
+      "freightCost": 52000,
+      "otherCOGS": 70000
+    }
+  ],
+  "submittedCalculations": [
+    {
+      "id": "calc_q2_margin",
+      "label": "Q2 gross margin",
+      "calculation": "(500000 - 325000) / 500000",
+      "result": "35.0%"
+    },
+    {
+      "id": "calc_q3_margin",
+      "label": "Q3 gross margin",
+      "calculation": "(510000 - 367000) / 510000",
+      "result": "28.0%"
+    },
+    {
+      "id": "calc_margin_change",
+      "label": "Gross margin change",
+      "calculation": "28.0% - 35.0%",
+      "result": "-7.0 percentage points"
+    },
+    {
+      "id": "calc_revenue_change",
+      "label": "Revenue change",
+      "calculation": "(510000 - 500000) / 500000",
+      "result": "+2.0%"
+    },
+    {
+      "id": "calc_cogs_change",
+      "label": "COGS change",
+      "calculation": "(367000 - 325000) / 325000",
+      "result": "+12.9%"
+    },
+    {
+      "id": "calc_material_change",
+      "label": "Material cost change",
+      "calculation": "245000 - 210000",
+      "result": "+35000"
+    }
+  ],
+  "conclusion": {
+    "id": "conclusion_1",
+    "text": "Gross margin declined by approximately 7 percentage points. Revenue increased slightly, but the increase was more than offset by higher COGS. Material cost was the largest absolute cost increase, with freight also increasing. Management should first investigate the material-cost increase by reviewing supplier pricing and unit-cost changes, then evaluate renegotiation or alternative sourcing before changing customer pricing."
+  },
+  "provenance": {
+    "id": "provenance_1",
+    "label": "Synthetic demonstration packet",
+    "description": "All candidate, task, dataset, calculation, and conclusion content in this prototype is synthetic and exists only to demonstrate the evaluator workflow."
+  },
+  "criteria": [
+    {
+      "id": "criterion_1",
+      "label": "Calculate margin change correctly"
+    },
+    {
+      "id": "criterion_2",
+      "label": "Identify the primary driver"
+    },
+    {
+      "id": "criterion_3",
+      "label": "Distinguish revenue effect from cost effect"
+    },
+    {
+      "id": "criterion_4",
+      "label": "Recommend an actionable next step"
+    }
+  ],
+  "verificationAssumptions": {
+    "baseline": {
+      "verificationStep": "full_case",
+      "minutes": 60
+    },
+    "minutesByStep": {
+      "full_case": 60,
+      "shortened_case": 35,
+      "brief_verification_interview": 15,
+      "no_additional_skill_assessment": 0
+    }
+  }
+}
