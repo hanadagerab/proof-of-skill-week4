@@ -92,3 +92,24 @@ export const sourcePacketSchema = z
 
 export type VerificationStep = z.infer<typeof verificationStepSchema>;
 export type SourcePacket = z.infer<typeof sourcePacketSchema>;
+export const evidenceStatusSchema = z.enum([
+  "supported",
+  "partially_supported",
+  "missing",
+]);
+
+export const criterionMappingSchema = z.object({
+  criterionId: z.string().min(1),
+  status: evidenceStatusSchema,
+  evidenceReferences: z.array(z.string().min(1)),
+  gap: z.string(),
+  uncertainty: z.string(),
+});
+
+export const evidenceMappingResponseSchema = z.object({
+  mappings: z.array(criterionMappingSchema).length(4),
+});
+
+export type EvidenceMappingResponse = z.infer<
+  typeof evidenceMappingResponseSchema
+>;
