@@ -5,8 +5,10 @@ import { useState } from "react";
 import type {
   EvidenceMappingResponse,
   SourcePacket,
+  VerificationStep,
 } from "@/lib/schemas";
 
+import { verificationStepSchema } from "@/lib/schemas";
 import { EvidenceSection } from "@/components/EvidenceSection";
 
 type ProofCheckpointClientProps = {
@@ -27,6 +29,28 @@ type AnalyzeResponse = AnalyzeSuccessResponse | AnalyzeFailureResponse;
 
 const FALLBACK_MESSAGE =
   "AI mapping unavailable — raw evidence remains inspectable.";
+
+const verificationOptions: Array<{
+  value: VerificationStep;
+  label: string;
+}> = [
+  {
+    value: "full_case",
+    label: "Full case",
+  },
+  {
+    value: "shortened_case",
+    label: "Shortened case",
+  },
+  {
+    value: "brief_verification_interview",
+    label: "Brief verification interview",
+  },
+  {
+    value: "no_additional_skill_assessment",
+    label: "No additional skill assessment",
+  },
+];
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -56,6 +80,8 @@ export function ProofCheckpointClient({
     useState<EvidenceMappingResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [verificationChoice, setVerificationChoice] =
+    useState<VerificationStep | null>(null);
 
   const {
     candidate,
@@ -95,12 +121,24 @@ export function ProofCheckpointClient({
       }
 
       setMapping(data.mapping);
+      setVerificationChoice(null);
       setScreen("map");
     } catch {
       setError(FALLBACK_MESSAGE);
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function handleVerificationChoice(value: string) {
+    const parsedChoice = verificationStepSchema.safeParse(value);
+
+    if (!parsedChoice.success) {
+      setVerificationChoice(null);
+      return;
+    }
+
+    setVerificationChoice(parsedChoice.data);
   }
 
   if (screen === "map" && mapping) {
@@ -227,6 +265,43 @@ export function ProofCheckpointClient({
               );
             })}
           </div>
+
+          <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-6">
+              <p className="text-sm font-medium text-slate-500">
+                Your decision
+              </p>
+
+              <h2 className="mt-1 text-xl font-semibold text-slate-950">
+                Based on the evidence you inspected, how much additional skill verification do you still require?
+              </h2>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {verificationOptions.map((option) => {
+                const isSelected =
+                  verificationChoice === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() =>
+                      handleVerificationChoice(option.value)
+                    }
+                    aria-pressed={isSelected}
+                    className={`rounded-xl border p-4 text-left text-sm font-medium transition ${
+                      isSelected
+                        ? "border-slate-950 bg-slate-100 text-slate-950"
+                        : "border-slate-300 bg-white text-slate-800 hover:border-slate-500"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
 
           <footer className="mt-8 text-center text-xs text-slate-500">
             Synthetic demo data
