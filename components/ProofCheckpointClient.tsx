@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 
+import { EvidenceSection } from "@/components/EvidenceSection";
+import { calculateVerificationTime } from "@/lib/calculateVerificationTime";
+import { verificationStepSchema } from "@/lib/schemas";
+
 import type {
   EvidenceMappingResponse,
   SourcePacket,
   VerificationStep,
 } from "@/lib/schemas";
-
-import { verificationStepSchema } from "@/lib/schemas";
-import { EvidenceSection } from "@/components/EvidenceSection";
 
 type ProofCheckpointClientProps = {
   packet: SourcePacket;
@@ -76,12 +77,23 @@ export function ProofCheckpointClient({
   packet,
 }: ProofCheckpointClientProps) {
   const [screen, setScreen] = useState<"raw" | "map">("raw");
+
   const [mapping, setMapping] =
     useState<EvidenceMappingResponse | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const [verificationChoice, setVerificationChoice] =
     useState<VerificationStep | null>(null);
+
+  const verificationTimeResult = verificationChoice
+    ? calculateVerificationTime(
+        verificationChoice,
+        packet.verificationAssumptions
+      )
+    : null;
 
   const {
     candidate,
@@ -134,6 +146,11 @@ export function ProofCheckpointClient({
     const parsedChoice = verificationStepSchema.safeParse(value);
 
     if (!parsedChoice.success) {
+      setVerificationChoice(null);
+      return;
+    }
+
+    if (verificationChoice === parsedChoice.data) {
       setVerificationChoice(null);
       return;
     }
@@ -224,7 +241,9 @@ export function ProofCheckpointClient({
                                 <span className="font-medium text-slate-950">
                                   {evidenceLabels.get(reference) ?? reference}
                                 </span>
+
                                 <br />
+
                                 <code className="text-xs text-slate-500">
                                   {reference}
                                 </code>
@@ -303,6 +322,46 @@ export function ProofCheckpointClient({
             </div>
           </section>
 
+          {verificationTimeResult && (
+            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">
+                Deterministic demo calculation
+              </p>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Demo baseline
+                  </p>
+
+                  <p className="mt-1 text-xl font-semibold text-slate-950">
+                    {verificationTimeResult.baselineMinutes} min
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Evaluator minutes remaining
+                  </p>
+
+                  <p className="mt-1 text-xl font-semibold text-slate-950">
+                    {verificationTimeResult.minutesRemaining} min
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Potential minutes avoided
+                  </p>
+
+                  <p className="mt-1 text-xl font-semibold text-slate-950">
+                    {verificationTimeResult.potentialMinutesAvoided} min
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+
           <footer className="mt-8 text-center text-xs text-slate-500">
             Synthetic demo data
           </footer>
@@ -342,6 +401,7 @@ export function ProofCheckpointClient({
                 <dt className="text-sm font-medium text-slate-500">
                   Candidate name
                 </dt>
+
                 <dd className="mt-1 text-base font-semibold text-slate-950">
                   {candidate.name}
                 </dd>
@@ -351,6 +411,7 @@ export function ProofCheckpointClient({
                 <dt className="text-sm font-medium text-slate-500">
                   Role
                 </dt>
+
                 <dd className="mt-1 text-base font-semibold text-slate-950">
                   {candidate.role}
                 </dd>
@@ -364,6 +425,7 @@ export function ProofCheckpointClient({
                 <p className="text-sm font-medium text-slate-500">
                   Task
                 </p>
+
                 <p className="mt-1 text-base font-semibold text-slate-950">
                   {task.prompt}
                 </p>
@@ -373,6 +435,7 @@ export function ProofCheckpointClient({
                 <p className="text-sm font-medium text-slate-500">
                   Task brief
                 </p>
+
                 <p className="mt-1 max-w-4xl leading-7 text-slate-700">
                   {task.brief}
                 </p>
@@ -385,15 +448,26 @@ export function ProofCheckpointClient({
               <table className="w-full min-w-[800px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-500">
-                    <th className="px-3 py-3 font-medium">Period</th>
-                    <th className="px-3 py-3 font-medium">Revenue</th>
-                    <th className="px-3 py-3 font-medium">Units sold</th>
+                    <th className="px-3 py-3 font-medium">
+                      Period
+                    </th>
+
+                    <th className="px-3 py-3 font-medium">
+                      Revenue
+                    </th>
+
+                    <th className="px-3 py-3 font-medium">
+                      Units sold
+                    </th>
+
                     <th className="px-3 py-3 font-medium">
                       Material cost
                     </th>
+
                     <th className="px-3 py-3 font-medium">
                       Freight cost
                     </th>
+
                     <th className="px-3 py-3 font-medium">
                       Other COGS
                     </th>
@@ -409,18 +483,23 @@ export function ProofCheckpointClient({
                       <td className="px-3 py-4 font-semibold text-slate-950">
                         {row.period}
                       </td>
+
                       <td className="px-3 py-4 text-slate-700">
                         {formatCurrency(row.revenue)}
                       </td>
+
                       <td className="px-3 py-4 text-slate-700">
                         {row.unitsSold.toLocaleString("en-US")}
                       </td>
+
                       <td className="px-3 py-4 text-slate-700">
                         {formatCurrency(row.materialCost)}
                       </td>
+
                       <td className="px-3 py-4 text-slate-700">
                         {formatCurrency(row.freightCost)}
                       </td>
+
                       <td className="px-3 py-4 text-slate-700">
                         {formatCurrency(row.otherCOGS)}
                       </td>
@@ -442,6 +521,7 @@ export function ProofCheckpointClient({
                     <p className="text-sm font-medium text-slate-500">
                       Calculation
                     </p>
+
                     <p className="mt-1 font-semibold text-slate-950">
                       {item.label}
                     </p>
@@ -451,6 +531,7 @@ export function ProofCheckpointClient({
                     <p className="text-sm font-medium text-slate-500">
                       Formula
                     </p>
+
                     <code className="mt-1 block text-sm text-slate-700">
                       {item.calculation}
                     </code>
@@ -460,6 +541,7 @@ export function ProofCheckpointClient({
                     <p className="text-sm font-medium text-slate-500">
                       Result
                     </p>
+
                     <p className="mt-1 font-semibold text-slate-950">
                       {item.result}
                     </p>
