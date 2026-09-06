@@ -73,6 +73,14 @@ function formatStatus(status: string) {
   return "Missing";
 }
 
+function getVerificationLabel(step: VerificationStep) {
+  const option = verificationOptions.find(
+    (item) => item.value === step
+  );
+
+  return option?.label ?? step;
+}
+
 export function ProofCheckpointClient({
   packet,
 }: ProofCheckpointClientProps) {
@@ -143,7 +151,8 @@ export function ProofCheckpointClient({
   }
 
   function handleVerificationChoice(value: string) {
-    const parsedChoice = verificationStepSchema.safeParse(value);
+    const parsedChoice =
+      verificationStepSchema.safeParse(value);
 
     if (!parsedChoice.success) {
       setVerificationChoice(null);
@@ -194,9 +203,11 @@ export function ProofCheckpointClient({
 
           <div className="space-y-5">
             {criteria.map((criterion) => {
-              const criterionMapping = mapping.mappings.find(
-                (item) => item.criterionId === criterion.id
-              );
+              const criterionMapping =
+                mapping.mappings.find(
+                  (item) =>
+                    item.criterionId === criterion.id
+                );
 
               if (!criterionMapping) {
                 return null;
@@ -224,7 +235,9 @@ export function ProofCheckpointClient({
                       </p>
 
                       <p className="mt-2 font-semibold text-slate-950">
-                        {formatStatus(criterionMapping.status)}
+                        {formatStatus(
+                          criterionMapping.status
+                        )}
                       </p>
                     </div>
 
@@ -233,13 +246,16 @@ export function ProofCheckpointClient({
                         Evidence Used
                       </p>
 
-                      {criterionMapping.evidenceReferences.length > 0 ? (
+                      {criterionMapping
+                        .evidenceReferences.length > 0 ? (
                         <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
                           {criterionMapping.evidenceReferences.map(
                             (reference) => (
                               <li key={reference}>
                                 <span className="font-medium text-slate-950">
-                                  {evidenceLabels.get(reference) ?? reference}
+                                  {evidenceLabels.get(
+                                    reference
+                                  ) ?? reference}
                                 </span>
 
                                 <br />
@@ -268,14 +284,16 @@ export function ProofCheckpointClient({
                           <span className="font-medium text-slate-950">
                             Gap:
                           </span>{" "}
-                          {criterionMapping.gap || "None stated."}
+                          {criterionMapping.gap ||
+                            "None stated."}
                         </p>
 
                         <p>
                           <span className="font-medium text-slate-950">
                             Uncertainty:
                           </span>{" "}
-                          {criterionMapping.uncertainty || "None stated."}
+                          {criterionMapping.uncertainty ||
+                            "None stated."}
                         </p>
                       </div>
                     </div>
@@ -306,7 +324,9 @@ export function ProofCheckpointClient({
                     key={option.value}
                     type="button"
                     onClick={() =>
-                      handleVerificationChoice(option.value)
+                      handleVerificationChoice(
+                        option.value
+                      )
                     }
                     aria-pressed={isSelected}
                     className={`rounded-xl border p-4 text-left text-sm font-medium transition ${
@@ -322,45 +342,83 @@ export function ProofCheckpointClient({
             </div>
           </section>
 
-          {verificationTimeResult && (
-            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">
-                Deterministic demo calculation
-              </p>
-
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <div>
-                  <p className="text-sm text-slate-500">
-                    Demo baseline
+          {verificationTimeResult &&
+            verificationChoice && (
+              <section className="mt-6 rounded-2xl border border-slate-900 bg-slate-950 p-6 text-white shadow-sm">
+                <div className="mb-6">
+                  <p className="text-sm font-medium text-slate-300">
+                    Verification Decision
                   </p>
 
-                  <p className="mt-1 text-xl font-semibold text-slate-950">
-                    {verificationTimeResult.baselineMinutes} min
-                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold">
+                    Evaluator-selected step — the system did not choose this option.
+                  </h2>
                 </div>
 
-                <div>
-                  <p className="text-sm text-slate-500">
-                    Evaluator minutes remaining
-                  </p>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <p className="text-sm text-slate-400">
+                      Selected verification step
+                    </p>
 
-                  <p className="mt-1 text-xl font-semibold text-slate-950">
-                    {verificationTimeResult.minutesRemaining} min
-                  </p>
+                    <p className="mt-1 font-semibold">
+                      {getVerificationLabel(
+                        verificationChoice
+                      )}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">
+                      Demo verification baseline
+                    </p>
+
+                    <p className="mt-1 text-xl font-semibold">
+                      {
+                        verificationTimeResult.baselineMinutes
+                      }{" "}
+                      min
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">
+                      Evaluator minutes remaining
+                    </p>
+
+                    <p className="mt-1 text-xl font-semibold">
+                      {
+                        verificationTimeResult.minutesRemaining
+                      }{" "}
+                      min
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">
+                      Potential minutes avoided
+                    </p>
+
+                    <p className="mt-1 text-xl font-semibold">
+                      {
+                        verificationTimeResult.potentialMinutesAvoided
+                      }{" "}
+                      min
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="text-sm text-slate-500">
-                    Potential minutes avoided
+                <div className="mt-6 space-y-2 border-t border-slate-700 pt-5 text-sm leading-6 text-slate-300">
+                  <p>
+                    Synthetic demo assumption. These values are illustrative and do not represent validated employer savings.
                   </p>
 
-                  <p className="mt-1 text-xl font-semibold text-slate-950">
-                    {verificationTimeResult.potentialMinutesAvoided} min
+                  <p>
+                    Final hiring and verification decisions remain with the evaluator.
                   </p>
                 </div>
-              </div>
-            </section>
-          )}
+              </section>
+            )}
 
           <footer className="mt-8 text-center text-xs text-slate-500">
             Synthetic demo data
@@ -389,8 +447,7 @@ export function ProofCheckpointClient({
           </h1>
 
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
-            Inspect the candidate&apos;s submitted evidence before deciding
-            whether any additional skill verification is needed.
+            Inspect the candidate&apos;s submitted evidence before deciding whether any additional skill verification is needed.
           </p>
         </header>
 
@@ -489,15 +546,21 @@ export function ProofCheckpointClient({
                       </td>
 
                       <td className="px-3 py-4 text-slate-700">
-                        {row.unitsSold.toLocaleString("en-US")}
+                        {row.unitsSold.toLocaleString(
+                          "en-US"
+                        )}
                       </td>
 
                       <td className="px-3 py-4 text-slate-700">
-                        {formatCurrency(row.materialCost)}
+                        {formatCurrency(
+                          row.materialCost
+                        )}
                       </td>
 
                       <td className="px-3 py-4 text-slate-700">
-                        {formatCurrency(row.freightCost)}
+                        {formatCurrency(
+                          row.freightCost
+                        )}
                       </td>
 
                       <td className="px-3 py-4 text-slate-700">
@@ -580,8 +643,7 @@ export function ProofCheckpointClient({
 
           <section className="rounded-2xl border border-slate-900 bg-slate-950 p-6 text-white">
             <p className="mb-4 max-w-3xl text-sm leading-6 text-slate-300">
-              The next step compares only the structured evidence above
-              against the explicit task criteria.
+              The next step compares only the structured evidence above against the explicit task criteria.
             </p>
 
             <button
