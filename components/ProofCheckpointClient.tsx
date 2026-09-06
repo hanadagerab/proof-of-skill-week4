@@ -35,14 +35,8 @@ const verificationOptions: Array<{
   value: VerificationStep;
   label: string;
 }> = [
-  {
-    value: "full_case",
-    label: "Full case",
-  },
-  {
-    value: "shortened_case",
-    label: "Shortened case",
-  },
+  { value: "full_case", label: "Full case" },
+  { value: "shortened_case", label: "Shortened case" },
   {
     value: "brief_verification_interview",
     label: "Brief verification interview",
@@ -62,37 +56,23 @@ function formatCurrency(value: number) {
 }
 
 function formatStatus(status: string) {
-  if (status === "supported") {
-    return "Supported";
-  }
-
-  if (status === "partially_supported") {
-    return "Partially supported";
-  }
-
+  if (status === "supported") return "Supported";
+  if (status === "partially_supported") return "Partially supported";
   return "Missing";
 }
 
 function getVerificationLabel(step: VerificationStep) {
-  const option = verificationOptions.find(
-    (item) => item.value === step
-  );
-
-  return option?.label ?? step;
+  return verificationOptions.find((item) => item.value === step)?.label ?? step;
 }
 
 export function ProofCheckpointClient({
   packet,
 }: ProofCheckpointClientProps) {
   const [screen, setScreen] = useState<"raw" | "map">("raw");
-
   const [mapping, setMapping] =
     useState<EvidenceMappingResponse | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
-
   const [verificationChoice, setVerificationChoice] =
     useState<VerificationStep | null>(null);
 
@@ -151,8 +131,7 @@ export function ProofCheckpointClient({
   }
 
   function handleVerificationChoice(value: string) {
-    const parsedChoice =
-      verificationStepSchema.safeParse(value);
+    const parsedChoice = verificationStepSchema.safeParse(value);
 
     if (!parsedChoice.success) {
       setVerificationChoice(null);
@@ -165,6 +144,35 @@ export function ProofCheckpointClient({
     }
 
     setVerificationChoice(parsedChoice.data);
+  }
+
+  function viewEvidence(reference: string) {
+    setScreen("raw");
+
+    window.setTimeout(() => {
+      const element = document.getElementById(reference);
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+
+        element.classList.add(
+          "ring-2",
+          "ring-slate-900",
+          "ring-offset-2"
+        );
+
+        window.setTimeout(() => {
+          element.classList.remove(
+            "ring-2",
+            "ring-slate-900",
+            "ring-offset-2"
+          );
+        }, 1800);
+      }
+    }, 50);
   }
 
   if (screen === "map" && mapping) {
@@ -203,15 +211,11 @@ export function ProofCheckpointClient({
 
           <div className="space-y-5">
             {criteria.map((criterion) => {
-              const criterionMapping =
-                mapping.mappings.find(
-                  (item) =>
-                    item.criterionId === criterion.id
-                );
+              const criterionMapping = mapping.mappings.find(
+                (item) => item.criterionId === criterion.id
+              );
 
-              if (!criterionMapping) {
-                return null;
-              }
+              if (!criterionMapping) return null;
 
               return (
                 <section
@@ -235,9 +239,7 @@ export function ProofCheckpointClient({
                       </p>
 
                       <p className="mt-2 font-semibold text-slate-950">
-                        {formatStatus(
-                          criterionMapping.status
-                        )}
+                        {formatStatus(criterionMapping.status)}
                       </p>
                     </div>
 
@@ -246,16 +248,13 @@ export function ProofCheckpointClient({
                         Evidence Used
                       </p>
 
-                      {criterionMapping
-                        .evidenceReferences.length > 0 ? (
-                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                      {criterionMapping.evidenceReferences.length > 0 ? (
+                        <ul className="mt-2 space-y-4 text-sm leading-6 text-slate-700">
                           {criterionMapping.evidenceReferences.map(
                             (reference) => (
                               <li key={reference}>
                                 <span className="font-medium text-slate-950">
-                                  {evidenceLabels.get(
-                                    reference
-                                  ) ?? reference}
+                                  {evidenceLabels.get(reference) ?? reference}
                                 </span>
 
                                 <br />
@@ -263,6 +262,16 @@ export function ProofCheckpointClient({
                                 <code className="text-xs text-slate-500">
                                   {reference}
                                 </code>
+
+                                <br />
+
+                                <button
+                                  type="button"
+                                  onClick={() => viewEvidence(reference)}
+                                  className="mt-1 text-sm font-medium text-slate-700 underline underline-offset-4 hover:text-slate-950"
+                                >
+                                  View evidence →
+                                </button>
                               </li>
                             )
                           )}
@@ -284,16 +293,14 @@ export function ProofCheckpointClient({
                           <span className="font-medium text-slate-950">
                             Gap:
                           </span>{" "}
-                          {criterionMapping.gap ||
-                            "None stated."}
+                          {criterionMapping.gap || "None stated."}
                         </p>
 
                         <p>
                           <span className="font-medium text-slate-950">
                             Uncertainty:
                           </span>{" "}
-                          {criterionMapping.uncertainty ||
-                            "None stated."}
+                          {criterionMapping.uncertainty || "None stated."}
                         </p>
                       </div>
                     </div>
@@ -316,17 +323,14 @@ export function ProofCheckpointClient({
 
             <div className="grid gap-3 sm:grid-cols-2">
               {verificationOptions.map((option) => {
-                const isSelected =
-                  verificationChoice === option.value;
+                const isSelected = verificationChoice === option.value;
 
                 return (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() =>
-                      handleVerificationChoice(
-                        option.value
-                      )
+                      handleVerificationChoice(option.value)
                     }
                     aria-pressed={isSelected}
                     className={`rounded-xl border p-4 text-left text-sm font-medium transition ${
@@ -342,83 +346,71 @@ export function ProofCheckpointClient({
             </div>
           </section>
 
-          {verificationTimeResult &&
-            verificationChoice && (
-              <section className="mt-6 rounded-2xl border border-slate-900 bg-slate-950 p-6 text-white shadow-sm">
-                <div className="mb-6">
-                  <p className="text-sm font-medium text-slate-300">
-                    Verification Decision
+          {verificationTimeResult && verificationChoice && (
+            <section className="mt-6 rounded-2xl border border-slate-900 bg-slate-950 p-6 text-white shadow-sm">
+              <div className="mb-6">
+                <p className="text-sm font-medium text-slate-300">
+                  Verification Decision
+                </p>
+
+                <h2 className="mt-1 text-2xl font-semibold">
+                  Evaluator-selected step — the system did not choose this option.
+                </h2>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <p className="text-sm text-slate-400">
+                    Selected verification step
                   </p>
 
-                  <h2 className="mt-1 text-2xl font-semibold">
-                    Evaluator-selected step — the system did not choose this option.
-                  </h2>
-                </div>
-
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <p className="text-sm text-slate-400">
-                      Selected verification step
-                    </p>
-
-                    <p className="mt-1 font-semibold">
-                      {getVerificationLabel(
-                        verificationChoice
-                      )}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">
-                      Demo verification baseline
-                    </p>
-
-                    <p className="mt-1 text-xl font-semibold">
-                      {
-                        verificationTimeResult.baselineMinutes
-                      }{" "}
-                      min
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">
-                      Evaluator minutes remaining
-                    </p>
-
-                    <p className="mt-1 text-xl font-semibold">
-                      {
-                        verificationTimeResult.minutesRemaining
-                      }{" "}
-                      min
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">
-                      Potential minutes avoided
-                    </p>
-
-                    <p className="mt-1 text-xl font-semibold">
-                      {
-                        verificationTimeResult.potentialMinutesAvoided
-                      }{" "}
-                      min
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-6 space-y-2 border-t border-slate-700 pt-5 text-sm leading-6 text-slate-300">
-                  <p>
-                    Synthetic demo assumption. These values are illustrative and do not represent validated employer savings.
-                  </p>
-
-                  <p>
-                    Final hiring and verification decisions remain with the evaluator.
+                  <p className="mt-1 font-semibold">
+                    {getVerificationLabel(verificationChoice)}
                   </p>
                 </div>
-              </section>
-            )}
+
+                <div>
+                  <p className="text-sm text-slate-400">
+                    Demo verification baseline
+                  </p>
+
+                  <p className="mt-1 text-xl font-semibold">
+                    {verificationTimeResult.baselineMinutes} min
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-400">
+                    Evaluator minutes remaining
+                  </p>
+
+                  <p className="mt-1 text-xl font-semibold">
+                    {verificationTimeResult.minutesRemaining} min
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-400">
+                    Potential minutes avoided
+                  </p>
+
+                  <p className="mt-1 text-xl font-semibold">
+                    {verificationTimeResult.potentialMinutesAvoided} min
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-2 border-t border-slate-700 pt-5 text-sm leading-6 text-slate-300">
+                <p>
+                  Synthetic demo assumption. These values are illustrative and do not represent validated employer savings.
+                </p>
+
+                <p>
+                  Final hiring and verification decisions remain with the evaluator.
+                </p>
+              </div>
+            </section>
+          )}
 
           <footer className="mt-8 text-center text-xs text-slate-500">
             Synthetic demo data
@@ -458,7 +450,6 @@ export function ProofCheckpointClient({
                 <dt className="text-sm font-medium text-slate-500">
                   Candidate name
                 </dt>
-
                 <dd className="mt-1 text-base font-semibold text-slate-950">
                   {candidate.name}
                 </dd>
@@ -468,7 +459,6 @@ export function ProofCheckpointClient({
                 <dt className="text-sm font-medium text-slate-500">
                   Role
                 </dt>
-
                 <dd className="mt-1 text-base font-semibold text-slate-950">
                   {candidate.role}
                 </dd>
@@ -505,64 +495,37 @@ export function ProofCheckpointClient({
               <table className="w-full min-w-[800px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-500">
-                    <th className="px-3 py-3 font-medium">
-                      Period
-                    </th>
-
-                    <th className="px-3 py-3 font-medium">
-                      Revenue
-                    </th>
-
-                    <th className="px-3 py-3 font-medium">
-                      Units sold
-                    </th>
-
-                    <th className="px-3 py-3 font-medium">
-                      Material cost
-                    </th>
-
-                    <th className="px-3 py-3 font-medium">
-                      Freight cost
-                    </th>
-
-                    <th className="px-3 py-3 font-medium">
-                      Other COGS
-                    </th>
+                    <th className="px-3 py-3 font-medium">Period</th>
+                    <th className="px-3 py-3 font-medium">Revenue</th>
+                    <th className="px-3 py-3 font-medium">Units sold</th>
+                    <th className="px-3 py-3 font-medium">Material cost</th>
+                    <th className="px-3 py-3 font-medium">Freight cost</th>
+                    <th className="px-3 py-3 font-medium">Other COGS</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {sourceDataset.map((row) => (
                     <tr
+                      id={row.id}
                       key={row.id}
-                      className="border-b border-slate-100 last:border-0"
+                      className="border-b border-slate-100 transition last:border-0"
                     >
                       <td className="px-3 py-4 font-semibold text-slate-950">
                         {row.period}
                       </td>
-
                       <td className="px-3 py-4 text-slate-700">
                         {formatCurrency(row.revenue)}
                       </td>
-
                       <td className="px-3 py-4 text-slate-700">
-                        {row.unitsSold.toLocaleString(
-                          "en-US"
-                        )}
+                        {row.unitsSold.toLocaleString("en-US")}
                       </td>
-
                       <td className="px-3 py-4 text-slate-700">
-                        {formatCurrency(
-                          row.materialCost
-                        )}
+                        {formatCurrency(row.materialCost)}
                       </td>
-
                       <td className="px-3 py-4 text-slate-700">
-                        {formatCurrency(
-                          row.freightCost
-                        )}
+                        {formatCurrency(row.freightCost)}
                       </td>
-
                       <td className="px-3 py-4 text-slate-700">
                         {formatCurrency(row.otherCOGS)}
                       </td>
@@ -577,14 +540,14 @@ export function ProofCheckpointClient({
             <div className="divide-y divide-slate-100">
               {submittedCalculations.map((item) => (
                 <div
+                  id={item.id}
                   key={item.id}
-                  className="grid gap-2 py-4 first:pt-0 last:pb-0 sm:grid-cols-[1fr_1.4fr_0.7fr]"
+                  className="grid gap-2 py-4 transition first:pt-0 last:pb-0 sm:grid-cols-[1fr_1.4fr_0.7fr]"
                 >
                   <div>
                     <p className="text-sm font-medium text-slate-500">
                       Calculation
                     </p>
-
                     <p className="mt-1 font-semibold text-slate-950">
                       {item.label}
                     </p>
@@ -594,7 +557,6 @@ export function ProofCheckpointClient({
                     <p className="text-sm font-medium text-slate-500">
                       Formula
                     </p>
-
                     <code className="mt-1 block text-sm text-slate-700">
                       {item.calculation}
                     </code>
@@ -604,7 +566,6 @@ export function ProofCheckpointClient({
                     <p className="text-sm font-medium text-slate-500">
                       Result
                     </p>
-
                     <p className="mt-1 font-semibold text-slate-950">
                       {item.result}
                     </p>
@@ -614,23 +575,27 @@ export function ProofCheckpointClient({
             </div>
           </EvidenceSection>
 
-          <EvidenceSection title="Candidate Conclusion">
-            <p className="max-w-4xl leading-7 text-slate-700">
-              {conclusion.text}
-            </p>
-          </EvidenceSection>
-
-          <EvidenceSection title="Provenance">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="font-semibold text-slate-950">
-                {provenance.label}
+          <div id={conclusion.id} className="transition">
+            <EvidenceSection title="Candidate Conclusion">
+              <p className="max-w-4xl leading-7 text-slate-700">
+                {conclusion.text}
               </p>
+            </EvidenceSection>
+          </div>
 
-              <p className="mt-2 leading-7 text-slate-600">
-                {provenance.description}
-              </p>
-            </div>
-          </EvidenceSection>
+          <div id={provenance.id} className="transition">
+            <EvidenceSection title="Provenance">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="font-semibold text-slate-950">
+                  {provenance.label}
+                </p>
+
+                <p className="mt-2 leading-7 text-slate-600">
+                  {provenance.description}
+                </p>
+              </div>
+            </EvidenceSection>
+          </div>
 
           {error && (
             <div
